@@ -23,6 +23,9 @@ const richAccount = [
   },
 ];
 
+// This address is a dummy address for testing only
+const EXCHANGE_ADDRESS = "0x0000000000000000000000000000000000000001"
+
 describe("ERC20Bridge", function () {
   const provider = new Provider(hre.config.networks.localhost.url);
   const deployerWallet = new Wallet(richAccount[0].privateKey, provider);
@@ -66,10 +69,17 @@ describe("ERC20Bridge", function () {
       bridgeInitializeData,
     ]);
 
+
+
     erc20Bridge = L2SharedBridgeFactory.connect(erc20BridgeProxy.address, deployerWallet);
+
+    // exchange address is required before ERC20 can be deployed
+    await (
+      await erc20Bridge.setExchangeAddress(EXCHANGE_ADDRESS)
+    ).wait();
   });
 
-  it("Should finalize deposit ERC20 deposit", async function () {
+  it("Should finalize deposit ERC20 deposit and fund exchange account", async function () {
     const erc20BridgeWithL1Bridge = L2SharedBridgeFactory.connect(erc20Bridge.address, l1BridgeWallet);
 
     const l1Depositor = ethers.Wallet.createRandom();
@@ -95,6 +105,21 @@ describe("ERC20Bridge", function () {
     expect(await erc20Token.name()).to.equal("TestToken");
     expect(await erc20Token.symbol()).to.equal("TT");
     expect(await erc20Token.decimals()).to.equal(18);
+
+    const fundExchangeAccountTx = await (
+      await erc20Token.fundExchangeAccount(
+        l2Receiver.address,
+        100
+      )
+    ).wait();
+
+    const fundExchangeAccountEvent = fundExchangeAccountTx.events.find((event) => event.event === "FundExchangeAccount");
+    
+    expect(fundExchangeAccountEvent.args.account).to.equal(l2Receiver.address);
+    expect(fundExchangeAccountEvent.args.amount).to.equal(100);
+    expect(await erc20Token.balanceOf(l2Receiver.address)).to.equal(0);
+    expect(await erc20Token.balanceOf(EXCHANGE_ADDRESS)).to.equal(100);
+    expect(await erc20Token.totalSupply()).to.equal(100);
   });
 
   it("Governance should be able to reinitialize the token", async () => {

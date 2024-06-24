@@ -24,7 +24,7 @@ const richAccount = [
 ];
 
 // This address is a dummy address for testing only
-const EXCHANGE_ADDRESS = "0x0000000000000000000000000000000000000001"
+const EXCHANGE_ADDRESS = "0x0000000000000000000000000000000000000001";
 
 describe("ERC20Bridge", function () {
   const provider = new Provider(hre.config.networks.localhost.url);
@@ -69,14 +69,18 @@ describe("ERC20Bridge", function () {
       bridgeInitializeData,
     ]);
 
-
-
     erc20Bridge = L2SharedBridgeFactory.connect(erc20BridgeProxy.address, deployerWallet);
 
     // exchange address is required before ERC20 can be deployed
-    await (
-      await erc20Bridge.setExchangeAddress(EXCHANGE_ADDRESS)
-    ).wait();
+    await (await erc20Bridge.setExchangeAddress(EXCHANGE_ADDRESS)).wait();
+
+    let dupExAddrEx;
+    try {
+      await (await erc20Bridge.setExchangeAddress(EXCHANGE_ADDRESS)).wait();
+    } catch (e) {
+      dupExAddrEx = e;
+    }
+    expect(dupExAddrEx.error.reason).to.be.equal("execution reverted: exchange address already set");
   });
 
   it("Should finalize deposit ERC20 deposit and fund exchange account", async function () {
@@ -106,15 +110,12 @@ describe("ERC20Bridge", function () {
     expect(await erc20Token.symbol()).to.equal("TT");
     expect(await erc20Token.decimals()).to.equal(18);
 
-    const fundExchangeAccountTx = await (
-      await erc20Token.fundExchangeAccount(
-        l2Receiver.address,
-        100
-      )
-    ).wait();
+    const fundExchangeAccountTx = await (await erc20Token.fundExchangeAccount(l2Receiver.address, 100)).wait();
 
-    const fundExchangeAccountEvent = fundExchangeAccountTx.events.find((event) => event.event === "FundExchangeAccount");
-    
+    const fundExchangeAccountEvent = fundExchangeAccountTx.events.find(
+      (event) => event.event === "FundExchangeAccount"
+    );
+
     expect(fundExchangeAccountEvent.args.account).to.equal(l2Receiver.address);
     expect(fundExchangeAccountEvent.args.amount).to.equal(100);
     expect(await erc20Token.balanceOf(l2Receiver.address)).to.equal(0);

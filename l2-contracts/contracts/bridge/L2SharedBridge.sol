@@ -187,6 +187,7 @@ contract L2SharedBridge is IL2SharedBridge, Initializable {
 
     /// @notice Set the address of GRVT smart contracts that can move the funds from user EOA to their exchange account. This should only be called once after the bridge is deployed
     function setExchangeAddress(address _exchangeAddress) external {
+        require(exchangeAddress == address(0), "exchange address already set");
         require(_exchangeAddress != address(0), "grvt@");
         exchangeAddress = _exchangeAddress;
     }

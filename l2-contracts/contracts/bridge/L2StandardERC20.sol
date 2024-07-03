@@ -7,12 +7,13 @@ import {UpgradeableBeacon} from "@openzeppelin/contracts/proxy/beacon/Upgradeabl
 import {ERC1967Upgrade} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Upgrade.sol";
 
 import {IL2StandardToken} from "./interfaces/IL2StandardToken.sol";
+import {IL2TokenFundExchange} from "./interfaces/IL2TokenFundExchange.sol";
 
 /// @author Matter Labs
 /// @custom:security-contact security@matterlabs.dev
 /// @notice The ERC20 token implementation, that is used in the "default" ERC20 bridge. Note, that it does not
 /// support any custom token logic, i.e. rebase tokens' functionality is not supported.
-contract L2StandardERC20 is ERC20PermitUpgradeable, IL2StandardToken, ERC1967Upgrade {
+contract L2StandardERC20 is ERC20PermitUpgradeable, IL2StandardToken, ERC1967Upgrade, IL2TokenFundExchange {
     /// @dev Describes whether there is a specific getter in the token.
     /// @notice Used to explicitly separate which getters the token has and which it does not.
     /// @notice Different tokens in L1 can implement or not implement getter function as `name`/`symbol`/`decimals`,
@@ -22,8 +23,6 @@ contract L2StandardERC20 is ERC20PermitUpgradeable, IL2StandardToken, ERC1967Upg
         bool ignoreSymbol;
         bool ignoreDecimals;
     }
-
-    event FundExchangeAccount(address indexed account, uint256 amount);
 
     ERC20Getters private availableGetters;
 

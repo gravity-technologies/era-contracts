@@ -684,6 +684,15 @@
   resolved "https://registry.yarnpkg.com/@matterlabs/hardhat-zksync-chai-matchers/-/hardhat-zksync-chai-matchers-0.1.4.tgz#105cb0ec1367c8fcd3ce7e3773f747c71fff675b"
   integrity sha512-eGQWiImg51fmayoQ7smIK/T6QZkSu38PK7xjp1RIrewGzw2ZgqFWGp40jb5oomkf8yOQPk52Hu4TwE3Ntp8CtA==
 
+"@matterlabs/hardhat-zksync-deploy@0.7.0":
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/@matterlabs/hardhat-zksync-deploy/-/hardhat-zksync-deploy-0.7.0.tgz#e56b73d8f8fbd0f809a779d0028418ea7d914017"
+  integrity sha512-PGZcuhKsVzZ2IWPt931pK2gA+HDxnCtye+7CwvoOnM6diHeO9tB1QHFX/ywR9ErOW9wpezhPYkVDx9myFrdoqQ==
+  dependencies:
+    "@matterlabs/hardhat-zksync-solc" "^1.0.5"
+    chalk "4.1.2"
+    ts-morph "^19.0.0"
+
 "@matterlabs/hardhat-zksync-deploy@^0.6.5":
   version "0.6.6"
   resolved "https://registry.yarnpkg.com/@matterlabs/hardhat-zksync-deploy/-/hardhat-zksync-deploy-0.6.6.tgz#5c86cf7da859844167d62300528c3e6013ee0286"

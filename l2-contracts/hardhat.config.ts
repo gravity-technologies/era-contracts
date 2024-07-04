@@ -4,6 +4,7 @@ import "@nomicfoundation/hardhat-chai-matchers";
 import "@nomiclabs/hardhat-ethers";
 import "hardhat-typechain";
 
+import "./tasks"
 // If no network is specified, use the default config
 if (!process.env.CHAIN_ETH_NETWORK) {
   // eslint-disable-next-line @typescript-eslint/no-var-requires

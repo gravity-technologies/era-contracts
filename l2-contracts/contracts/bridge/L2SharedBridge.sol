@@ -190,5 +190,11 @@ contract L2SharedBridge is IL2SharedBridge, Initializable {
         require(exchangeAddress == address(0), "exchange address already set");
         require(_exchangeAddress != address(0), "grvt@");
         exchangeAddress = _exchangeAddress;
+        L2ContractHelper.sendMessageToL1(
+            abi.encodePacked(
+                L2SharedBridge.setExchangeAddress.selector, 
+                _exchangeAddress
+            )
+        );
     }
 }

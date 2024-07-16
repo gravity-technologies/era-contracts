@@ -1,8 +1,8 @@
-import { task } from "hardhat/config"
+import { task } from "hardhat/config";
 import { hashBytecode } from "zksync-web3/build/src/utils";
-import { ethers } from "ethers"
-import { Wallet } from "zksync-ethers"
-import { Deployer } from "@matterlabs/hardhat-zksync-deploy/dist/deployer"
+import { ethers } from "ethers";
+import { Wallet } from "zksync-ethers";
+import { Deployer } from "@matterlabs/hardhat-zksync-deploy/dist/deployer";
 
 task("deploy-erc20-test-setup", "Deploy ERC20 test setup")
   .addParam("deployerPrivateKey", "Deployer private key")
@@ -18,32 +18,38 @@ task("deploy-erc20-test-setup", "Deploy ERC20 test setup")
 
     const overrides = {
       customData: { salt: taskArgs.salt },
-    }
+    };
 
-    const l2TokenImplAddress = await deployer.deploy(await deployer.loadArtifact("L2StandardERC20"), [], overrides)
-    const l2Erc20TokenBeacon = await deployer.deploy(await deployer.loadArtifact("UpgradeableBeacon"), [
-      l2TokenImplAddress.address,
-    ], overrides)
+    const l2TokenImplAddress = await deployer.deploy(await deployer.loadArtifact("L2StandardERC20"), [], overrides);
+    const l2Erc20TokenBeacon = await deployer.deploy(
+      await deployer.loadArtifact("UpgradeableBeacon"),
+      [l2TokenImplAddress.address],
+      overrides
+    );
 
-    await deployer.deploy(await deployer.loadArtifact("BeaconProxy"), [l2Erc20TokenBeacon.address, "0x"], overrides)
+    await deployer.deploy(await deployer.loadArtifact("BeaconProxy"), [l2Erc20TokenBeacon.address, "0x"], overrides);
 
     const beaconProxyBytecodeHash = hashBytecode((await deployer.loadArtifact("BeaconProxy")).bytecode);
 
-    const l2SharedBridgeImpl = await deployer.deploy(await deployer.loadArtifact("L2SharedBridge"), [9], overrides)
+    const l2SharedBridgeImpl = await deployer.deploy(await deployer.loadArtifact("L2SharedBridge"), [9], overrides);
 
-    const l2SharedBridgeProxy = await deployer.deploy(await deployer.loadArtifact("TransparentUpgradeableProxy"), [
-      l2SharedBridgeImpl.address,
-      governorWallet.address,
-      l2SharedBridgeImpl.interface.encodeFunctionData("initialize", [
-        unapplyL1ToL2Alias(l1BridgeWallet.address),
-        ethers.constants.AddressZero,
-        beaconProxyBytecodeHash,
+    const l2SharedBridgeProxy = await deployer.deploy(
+      await deployer.loadArtifact("TransparentUpgradeableProxy"),
+      [
+        l2SharedBridgeImpl.address,
         governorWallet.address,
-      ])
-    ], overrides)
+        l2SharedBridgeImpl.interface.encodeFunctionData("initialize", [
+          unapplyL1ToL2Alias(l1BridgeWallet.address),
+          ethers.constants.AddressZero,
+          beaconProxyBytecodeHash,
+          governorWallet.address,
+        ]),
+      ],
+      overrides
+    );
 
-    console.log(l2SharedBridgeProxy.address)
-  })
+    console.log(l2SharedBridgeProxy.address);
+  });
 
 const L1_TO_L2_ALIAS_OFFSET = "0x1111000000000000000000000000000000001111";
 const ADDRESS_MODULO = ethers.BigNumber.from(2).pow(160);

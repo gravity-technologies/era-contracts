@@ -158,6 +158,7 @@ contract L2StandardERC20 is ERC20PermitUpgradeable, IL2StandardToken, ERC1967Upg
     function fundExchangeAccount(address _from, uint256 _amount) external {
         require(_from != exchangeAddress, "invalid sender");
         require(exchangeAddress != address(0), "invalid exchange address");
+        require(msg.sender == exchangeAddress, "sender must be exchange");
 
         _transfer(_from, exchangeAddress, _amount);
 

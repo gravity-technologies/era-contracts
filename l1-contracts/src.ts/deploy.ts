@@ -693,65 +693,74 @@ export class Deployer {
 
     nonce = nonce ? parseInt(nonce) : await this.deployWallet.getTransactionCount();
 
-    const bridgehub = this.bridgehubContract(this.deployWallet);
-    const stateTransitionManager = this.stateTransitionManagerContract(this.deployWallet);
-
-    const inputChainId = predefinedChainId || getNumberFromEnv("CHAIN_ETH_ZKSYNC_NETWORK_ID");
-    const admin = process.env.CHAIN_ADMIN_ADDRESS || this.ownerAddress;
-    const diamondCutData = await this.initialZkSyncHyperchainDiamondCut(extraFacets);
-    const initialDiamondCut = new ethers.utils.AbiCoder().encode([DIAMOND_CUT_DATA_ABI_STRING], [diamondCutData]);
-
-    const receipt = await this.executeDirectOrGovernance(
-      useGovernance,
-      bridgehub,
-      "createNewChain",
-      [
-        inputChainId,
-        this.addresses.StateTransition.StateTransitionProxy,
-        baseTokenAddress,
-        Date.now(),
-        admin,
-        initialDiamondCut,
-      ],
-      0,
-      {
-        gasPrice,
-        nonce,
-        gasLimit,
-      }
-    );
-
-    const chainId = receipt.logs.find((log) => log.topics[0] == bridgehub.interface.getEventTopic("NewChain"))
-      .topics[1];
-
-    nonce++;
-    if (useGovernance) {
-      // deploying through governance requires two transactions
+    if (!process.env.SKIP_GOVERNOR_ACTIONS) {
+      const bridgehub = this.bridgehubContract(this.deployWallet);
+      const stateTransitionManager = this.stateTransitionManagerContract(this.deployWallet);
+  
+      const inputChainId = predefinedChainId || getNumberFromEnv("CHAIN_ETH_ZKSYNC_NETWORK_ID");
+      const admin = process.env.CHAIN_ADMIN_ADDRESS || this.ownerAddress;
+      const diamondCutData = await this.initialZkSyncHyperchainDiamondCut(extraFacets);
+      const initialDiamondCut = new ethers.utils.AbiCoder().encode([DIAMOND_CUT_DATA_ABI_STRING], [diamondCutData]);
+  
+      const receipt = await this.executeDirectOrGovernance(
+        useGovernance,
+        bridgehub,
+        "createNewChain",
+        [
+          inputChainId,
+          this.addresses.StateTransition.StateTransitionProxy,
+          baseTokenAddress,
+          Date.now(),
+          admin,
+          initialDiamondCut,
+        ],
+        0,
+        {
+          gasPrice,
+          nonce,
+          gasLimit,
+        }
+      );
+  
+      const chainId = receipt.logs.find((log) => log.topics[0] == bridgehub.interface.getEventTopic("NewChain"))
+        .topics[1];
+  
       nonce++;
-    }
-
-    this.addresses.BaseToken = baseTokenAddress;
-
-    if (this.verbose) {
-      console.log(`Hyperchain registered, gas used: ${receipt.gasUsed.toString()} and ${receipt.gasUsed.toString()}`);
-      console.log(`Hyperchain registration tx hash: ${receipt.transactionHash}`);
-
-      console.log(`CHAIN_ETH_ZKSYNC_NETWORK_ID=${parseInt(chainId, 16)}`);
-
-      console.log(`CONTRACTS_BASE_TOKEN_ADDR=${baseTokenAddress}`);
-    }
-    if (!predefinedChainId) {
-      const diamondProxyAddress =
-        "0x" +
-        receipt.logs
-          .find((log) => log.topics[0] == stateTransitionManager.interface.getEventTopic("NewHyperchain"))
-          .topics[2].slice(26);
-      this.addresses.StateTransition.DiamondProxy = diamondProxyAddress;
-      if (this.verbose) {
-        console.log(`CONTRACTS_DIAMOND_PROXY_ADDR=${diamondProxyAddress}`);
+      if (useGovernance) {
+        // deploying through governance requires two transactions
+        nonce++;
       }
+  
+      this.addresses.BaseToken = baseTokenAddress;
+  
+      if (this.verbose) {
+        console.log(`Hyperchain registered, gas used: ${receipt.gasUsed.toString()} and ${receipt.gasUsed.toString()}`);
+        console.log(`Hyperchain registration tx hash: ${receipt.transactionHash}`);
+  
+        console.log(`CHAIN_ETH_ZKSYNC_NETWORK_ID=${parseInt(chainId, 16)}`);
+  
+        console.log(`CONTRACTS_BASE_TOKEN_ADDR=${baseTokenAddress}`);
+      }
+      if (!predefinedChainId) {
+        const diamondProxyAddress =
+          "0x" +
+          receipt.logs
+            .find((log) => log.topics[0] == stateTransitionManager.interface.getEventTopic("NewHyperchain"))
+            .topics[2].slice(26);
+        this.addresses.StateTransition.DiamondProxy = diamondProxyAddress;
+        if (this.verbose) {
+          console.log(`CONTRACTS_DIAMOND_PROXY_ADDR=${diamondProxyAddress}`);
+        }
+      }
+      this.chainId = parseInt(chainId, 16);
     }
-    this.chainId = parseInt(chainId, 16);
+
+
+    if (!!process.env.SKIP_CHAIN_ADMIN_ACTIONS) {
+      return;
+    }
+
+    const chainId = predefinedChainId || getNumberFromEnv("CHAIN_ETH_ZKSYNC_NETWORK_ID");
 
     const validatorOneAddress = getAddressFromEnv("ETH_SENDER_SENDER_OPERATOR_COMMIT_ETH_ADDR");
     const validatorTwoAddress = getAddressFromEnv("ETH_SENDER_SENDER_OPERATOR_BLOBS_ETH_ADDR");

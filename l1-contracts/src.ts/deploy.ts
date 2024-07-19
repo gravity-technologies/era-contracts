@@ -461,11 +461,7 @@ export class Deployer {
     callData: string,
     printOperation: boolean = false
   ) {
-    let wallet = this.deployWallet;
-    if (!!process.env.GOVERNOR_PRIVATE_KEY) {
-      wallet = new ethers.Wallet(process.env.GOVERNOR_PRIVATE_KEY, this.deployWallet.provider);
-    }
-    const governance = IGovernanceFactory.connect(this.addresses.Governance, wallet);
+    const governance = IGovernanceFactory.connect(this.addresses.Governance, this.deployWallet);
     const operation = {
       calls: [{ target: targetAddress, value: value, data: callData }],
       predecessor: ethers.constants.HashZero,

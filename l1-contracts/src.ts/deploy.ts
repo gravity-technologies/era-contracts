@@ -461,7 +461,7 @@ export class Deployer {
     callData: string,
     printOperation: boolean = false
   ) {
-    let wallet = this.deployWallet
+    let wallet = this.deployWallet;
     if (!!process.env.GOVERNOR_PRIVATE_KEY) {
       wallet = new ethers.Wallet(process.env.GOVERNOR_PRIVATE_KEY, this.deployWallet.provider);
     }

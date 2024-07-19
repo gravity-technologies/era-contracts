@@ -1,13 +1,11 @@
 // hardhat import should be the first import in the file
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import * as hardhat from "hardhat";
 import { Command } from "commander";
 import { Wallet, ethers } from "ethers";
 import { Deployer } from "../src.ts/deploy";
 import { formatUnits, parseUnits } from "ethers/lib/utils";
 import { web3Provider, GAS_MULTIPLIER } from "./utils";
 import { deployedAddressesFromEnv } from "../src.ts/deploy-utils";
-import { initialBridgehubDeployment } from "../src.ts/deploy-process";
 import { ethTestConfig } from "../src.ts/utils";
 
 const provider = web3Provider();

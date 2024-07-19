@@ -102,12 +102,15 @@ async function main() {
 
       const useGovernance = !!cmd.useGovernance && cmd.useGovernance === "true";
 
-      if (!process.env.SKIP_GOVERNOR_ACTIONS && !(await deployer.bridgehubContract(deployWallet).tokenIsRegistered(baseTokenAddress))) {
+      if (
+        !process.env.SKIP_GOVERNOR_ACTIONS &&
+        !(await deployer.bridgehubContract(deployWallet).tokenIsRegistered(baseTokenAddress))
+      ) {
         await deployer.registerToken(baseTokenAddress, useGovernance);
       }
 
       await deployer.registerHyperchain(baseTokenAddress, cmd.validiumMode, null, gasPrice, useGovernance);
-      if (!!process.env.SKIP_CHAIN_ADMIN_ACTIONS) {
+      if (process.env.SKIP_CHAIN_ADMIN_ACTIONS) {
         return;
       }
       await deployer.transferAdminFromDeployerToGovernance();

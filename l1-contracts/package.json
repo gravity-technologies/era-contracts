@@ -17,7 +17,7 @@
     "@types/chai-as-promised": "^7.1.4",
     "@types/mocha": "^8.2.3",
     "argparse": "^1.0.10",
-    "axios": "^0.21.1",
+    "axios": "^1.8.2",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
     "chalk": "^4.1.0",
